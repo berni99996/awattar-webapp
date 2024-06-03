@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>aWATTar Strompreise</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .green {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .orange {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .red {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aktuelle Strompreise von aWATTar</h1>
+    <table id="priceTable">
+        <thead>
+            <tr>
+                <th>Startzeitpunkt</th>
+                <th>Endzeitpunkt</th>
+                <th>Preis (Cent/kWh)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="3">Preis wird hier angezeigt</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        function fetchMarketData() {
+            const url = 'https://api.awattar.at/v1/marketdata';
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = ''; // Clear previous data
+
+                    data.data.forEach(entry => {
+                        const startTime = new Date(entry.start_timestamp).toLocaleString();
+                        const endTime = new Date(entry.end_timestamp).toLocaleString();
+                        const marketPrice = (entry.marketprice / 10).toFixed(2); // Convert Eur/MWh to Cent/kWh
+
+                        const row = tableBody.insertRow();
+                        const cell1 = row.insertCell(0);
+                        const cell2 = row.insertCell(1);
+                        const cell3 = row.insertCell(2);
+
+                        cell1.innerText = startTime;
+                        cell2.innerText = endTime;
+                        cell3.innerText = marketPrice;
+
+                        // Apply color based on price value
+                        const priceValue = parseFloat(marketPrice);
+                        if (priceValue < 0) {
+                            cell3.classList.add('green');
+                        } else if (priceValue <= 10) {
+                            cell3.classList.add('orange');
+                        } else {
+                            cell3.classList.add('red');
+                        }
+                    });
+                })
+                .catch(error => console.error('Fehler:', error));
+        }
+
+        // Initial data fetch
+        fetchMarketData();
+
+        // Set interval to fetch data every second
+        setInterval(fetchMarketData, 1000);
+    </script>
+</body>
+</html>
